@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil - Ofis Tizimi{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Profil</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        ← Orqaga
+    </a>
+</div>
+
+<div class="card">
+    <div class="grid grid-2 gap-3">
+        <div>
+            <h3 style="margin-bottom: 20px;">Shaxsiy ma'lumotlar</h3>
+            
+            <div class="form-group">
+                <label class="form-label">Foydalanuvchi nomi:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">{{ user.username }}</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ism:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">
+                    {{ user.first_name|default:"Kiritilmagan" }}
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Familya:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">
+                    {{ user.last_name|default:"Kiritilmagan" }}
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">
+                    {{ user.email|default:"Kiritilmagan" }}
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ro'yxatdan o'tgan vaqt:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">
+                    {{ user.date_joined|date:"d.m.Y H:i" }}
+                </p>
+            </div>
+        </div>
+        
+        <div>
+            <h3 style="margin-bottom: 20px;">Statistika</h3>
+            
+            <div class="form-group">
+                <label class="form-label">Yaratilgan kompyuterlar:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0; font-size: 24px; font-weight: bold; color: #667eea;">
+                    {{ user.computer_set.count }}
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Oxirgi faollik:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">
+                    {{ user.last_login|date:"d.m.Y H:i"|default:"Noma'lum" }}
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Hisobni holati:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">
+                    {% if user.is_active %}
+                        <span style="color: #28a745;">✅ Faol</span>
+                    {% else %}
+                        <span style="color: #dc3545;">❌ Faol emas</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Huquqlar:</label>
+                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">
+                    {% if user.is_superuser %}
+                        <span style="color: #667eea;">👑 Super Admin</span>
+                    {% elif user.is_staff %}
+                        <span style="color: #ffc107;">🛡️ Admin</span>
+                    {% else %}
+                        <span style="color: #6c757d;">👤 Oddiy foydalanuvchi</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.computer_set.exists %}
+<div class="card">
+    <h3 style="margin-bottom: 20px;">Oxirgi yaratilgan kompyuterlar</h3>
+    <div class="grid grid-3">
+        {% for computer in user.computer_set.all|slice:":6" %}
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+            <h4 style="margin-bottom: 10px;">{{ computer.name }} {{ computer.surname }}</h4>
+            <p style="color: #666; margin-bottom: 10px;">{{ computer.created_at|date:"d.m.Y H:i" }}</p>
+            <a href="{% url 'computer_detail' computer.id %}" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                Ko'rish
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if user.computer_set.count > 6 %}
+    <div class="text-center mt-3">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+            Barchasi ({{ user.computer_set.count }})
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

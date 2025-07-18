@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ofis Tizimi{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Navbar - Minimal */
+        .navbar {
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 16px 0;
+            margin-bottom: 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+
+        .navbar-nav {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            font-size: 15px;
+        }
+
+        .nav-link:hover {
+            color: #1a1a1a;
+        }
+
+        .nav-link.active {
+            color: #1a1a1a;
+        }
+
+        /* Buttons - Minimal */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1.4;
+        }
+
+        .btn-primary {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #e5e5e5;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e5e5;
+            color: #1a1a1a;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        /* Cards - Minimal */
+        .card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        /* Grid System */
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        /* Form Elements */
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #1a1a1a;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .navbar-content {
+                padding: 0 16px;
+            }
+
+            .navbar-nav {
+                gap: 16px;
+            }
+
+            .nav-link {
+                font-size: 14px;
+            }
+
+            .grid-2,
+            .grid-3,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .btn {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .navbar-brand {
+                font-size: 18px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+
+            .navbar-content {
+                padding: 0 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .btn {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+        }
+
+        /* Utility Classes */
+        .d-flex {
+            display: flex;
+        }
+
+        .justify-content-between {
+            justify-content: space-between;
+        }
+
+        .align-items-center {
+            align-items: center;
+        }
+
+        .mb-4 {
+            margin-bottom: 24px;
+        }
+
+        .mt-3 {
+            margin-top: 16px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* Page specific styles */
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        /* Logout form */
+        .logout-form {
+            display: inline;
+        }
+
+        .logout-form button {
+            background: none;
+            border: none;
+            color: #666;
+            font-weight: 500;
+            font-size: 15px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .logout-form button:hover {
+            color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="{% url 'dashboard' %}" class="navbar-brand">Ofis Tizimi</a>
+            <div class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+                    <a href="{% url 'create_computer' %}" class="nav-link">Kompyuter Yaratish</a>
+                    <a href="{% url 'scanner' %}" class="nav-link">Scanner</a>
+                    <a href="{% url 'profile' %}" class="nav-link">{{ user.username }}</a>
+                    <form method="post" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit">Chiqish</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-link">Kirish</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

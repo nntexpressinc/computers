@@ -1,0 +1,196 @@
+_{% extends 'base.html' %}
+
+{% block title %}{{ computer.name }} {{ computer.surname }} - Ofis Tizimi{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 detail-header">
+    <h1>{{ computer.name }} {{ computer.surname }}</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        ← Orqaga
+    </a>
+</div>
+
+<div class="grid grid-2 gap-3 detail-grid">
+    <div class="card">
+        <h3 style="margin-bottom: 20px;">Kompyuter ma'lumotlari</h3>
+        
+        {% if computer.image %}
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="{{ computer.image.url }}" alt="Kompyuter rasmi" 
+                     class="computer-image"
+                     style="width: 200px; height: 200px; max-width: 100%; object-fit: cover; border-radius: 8px;">
+            </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label class="form-label">Ism:</label>
+            <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">{{ computer.name }}</p>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Familya:</label>
+            <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">{{ computer.surname }}</p>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Yaratilgan vaqt:</label>
+            <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">{{ computer.created_at|date:"d.m.Y H:i" }}</p>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Kim yaratgan:</label>
+            <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">{{ computer.created_by.username }}</p>
+        </div>
+        
+        {% if computer.signature %}
+        <div class="form-group">
+            <label class="form-label">Imzo:</label>
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0; text-align: center;">
+                {% if computer.signature|slice:":4" == "data" %}
+                    <img src="{{ computer.signature }}" alt="Imzo" style="max-width: 200px; height: auto; border: 1px solid #ddd; border-radius: 4px;">
+                {% else %}
+                    <p style="white-space: pre-wrap; margin: 0;">{{ computer.signature }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="card text-center">
+        <h3 style="margin-bottom: 20px;">QR Kod</h3>
+        <div style="background: white; padding: 20px; border-radius: 10px; display: inline-block; margin-bottom: 20px;">
+            <img src="{{ qr_code }}" alt="QR Kod" 
+                 class="qr-code-image"
+                 style="width: 200px; height: 200px; max-width: 100%;">
+        </div>
+        
+        <p style="color: #666; margin-bottom: 20px;">
+            Bu QR kodni kompyuterga yopishtiring. Buzilgan taqdirda Scanner orqali qayta skanerlash mumkin.
+        </p>
+        
+        <div class="d-flex gap-3 justify-content-center">
+            <button onclick="printQR()" class="btn btn-primary">
+                🖨️ Chop etish
+            </button>
+            <button onclick="downloadQR()" class="btn btn-secondary">
+                💾 Yuklab olish
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function printQR() {
+    const qrImage = document.querySelector('img[alt="QR Kod"]');
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>QR Kod - {{ computer.name }} {{ computer.surname }}</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        text-align: center; 
+                        padding: 20px;
+                    }
+                    .qr-container {
+                        border: 2px solid #333;
+                        padding: 20px;
+                        display: inline-block;
+                        margin: 20px;
+                    }
+                    .qr-info {
+                        margin-top: 15px;
+                        font-size: 14px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="qr-container">
+                    <h2>{{ computer.name }} {{ computer.surname }}</h2>
+                    <img src="{{ qr_code }}" style="width: 200px; height: 200px;">
+                    <div class="qr-info">
+                        <p>ID: {{ computer.id }}</p>
+                        <p>Vaqt: {{ computer.created_at|date:"d.m.Y H:i" }}</p>
+                    </div>
+                </div>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function downloadQR() {
+    const qrImage = document.querySelector('img[alt="QR Kod"]');
+    const link = document.createElement('a');
+    link.download = 'qr_code_{{ computer.id }}.png';
+    link.href = qrImage.src;
+    link.click();
+}
+</script>
+
+<style>
+    @media (max-width: 768px) {
+        .detail-header {
+            flex-direction: column;
+            gap: 15px;
+            align-items: stretch !important;
+        }
+        
+        .detail-header h1 {
+            font-size: 20px;
+            text-align: center;
+        }
+        
+        .detail-header .btn {
+            align-self: center;
+        }
+        
+        .detail-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .computer-image,
+        .qr-code-image {
+            width: 150px !important;
+            height: 150px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .detail-header h1 {
+            font-size: 18px;
+            word-break: break-word;
+        }
+        
+        .card {
+            padding: 15px;
+        }
+        
+        .card h3 {
+            font-size: 16px;
+        }
+        
+        .form-label {
+            font-size: 14px;
+        }
+        
+        .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .d-flex.gap-3 {
+            flex-direction: column;
+            gap: 10px !important;
+        }
+        
+        .computer-image,
+        .qr-code-image {
+            width: 120px !important;
+            height: 120px !important;
+        }
+    }
+</style>
+{% endblock %}

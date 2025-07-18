@@ -1,0 +1,434 @@
+{% extends 'base.html' %}
+
+{% block title %}Kompyuter yaratish - Ofis Tizimi{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Yangi kompyuter yaratish</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        ← Orqaga
+    </a>
+</div>
+
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="grid grid-2 gap-3" style="margin-bottom: 20px;">
+            <div class="form-group">
+                <label class="form-label">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">{{ form.surname.label }}</label>
+                {{ form.surname }}
+                {% if form.surname.errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.surname.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label">{{ form.image.label }}</label>
+            <div class="image-upload-container">
+                {{ form.image }}
+                <button type="button" id="camera-btn" class="btn btn-secondary" style="margin-top: 10px; width: 100%;">
+                    📷 Kamera
+                </button>
+            </div>
+            
+            <!-- Kamera modal -->
+            <div id="camera-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 15px; max-width: 500px; width: 90%;">
+                    <h3 style="text-align: center; margin-bottom: 20px;">Rasm olish</h3>
+                    <video id="camera-video" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; background: #f0f0f0;"></video>
+                    <canvas id="camera-canvas" style="display: none;"></canvas>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button type="button" id="capture-btn" class="btn btn-primary">
+                            📸 Rasm olish
+                        </button>
+                        <button type="button" id="close-camera-btn" class="btn btn-secondary">
+                            ❌ Yopish
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            {% if form.image.errors %}
+                <div class="alert alert-error">
+                    {% for error in form.image.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label">{{ form.signature.label }}</label>
+            <div class="signature-controls" style="margin-bottom: 15px;">
+                <button type="button" id="signature-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">
+                    ✍️ Imzo chizish
+                </button>
+                <button type="button" id="clear-signature-btn" class="btn btn-secondary" style="display: none; width: 100%;">
+                    🗑️ Tozalash
+                </button>
+            </div>
+            
+            <!-- Imzo canvas -->
+            <div id="signature-container" style="display: none; border: 2px solid #e5e5e5; border-radius: 8px; padding: 10px; background: white;">
+                <canvas id="signature-canvas" width="400" height="200" style="width: 100%; max-width: 400px; height: 200px; border: 1px solid #ddd; border-radius: 4px; background: white; display: block; margin: 0 auto;"></canvas>
+                <div style="text-align: center; margin-top: 10px;">
+                    <button type="button" id="save-signature-btn" class="btn btn-primary">
+                        ✅ Imzoni saqlash
+                    </button>
+                    <button type="button" id="cancel-signature-btn" class="btn btn-secondary">
+                        ❌ Bekor qilish
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Yashirin signature input -->
+            <input type="hidden" id="signature-data" name="signature" value="">
+            <div id="signature-preview" style="display: none; margin-top: 10px; text-align: center;">
+                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">✅ Imzo saqlandi</p>
+                <img id="signature-image" style="max-width: 200px; height: 100px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            
+            {% if form.signature.errors %}
+                <div class="alert alert-error">
+                    {% for error in form.signature.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-actions" style="margin-top: 30px;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">
+                Saqlash va QR kod yaratish
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="width: 100%; text-align: center; display: block; text-decoration: none;">
+                Bekor qilish
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .form-group input[type="file"] {
+        padding: 8px;
+        width: 100%;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .image-upload-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .signature-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 15px;
+            align-items: stretch !important;
+        }
+        
+        .d-flex.justify-content-between h1 {
+            font-size: 22px;
+            text-align: center;
+        }
+        
+        .d-flex.justify-content-between .btn {
+            align-self: center;
+        }
+        
+        .image-upload-container,
+        .signature-controls {
+            width: 100%;
+        }
+        
+        .form-actions {
+            margin-top: 20px;
+        }
+        
+        .card {
+            margin: 0 -5px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .container {
+            padding: 10px;
+        }
+        
+        .card {
+            padding: 15px;
+            margin: 0;
+        }
+        
+        .d-flex.justify-content-between h1 {
+            font-size: 20px;
+        }
+        
+        #camera-modal > div {
+            width: 95% !important;
+            padding: 15px !important;
+        }
+        
+        #camera-video {
+            height: 250px !important;
+        }
+        
+        #signature-canvas {
+            max-width: 100% !important;
+            height: 150px !important;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Kamera funksiyasi
+    const cameraBtn = document.getElementById('camera-btn');
+    const cameraModal = document.getElementById('camera-modal');
+    const cameraVideo = document.getElementById('camera-video');
+    const cameraCanvas = document.getElementById('camera-canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const closeCameraBtn = document.getElementById('close-camera-btn');
+    const imageInput = document.getElementById('id_image');
+    
+    // Imzo funksiyasi
+    const signatureBtn = document.getElementById('signature-btn');
+    const clearSignatureBtn = document.getElementById('clear-signature-btn');
+    const signatureContainer = document.getElementById('signature-container');
+    const signatureCanvas = document.getElementById('signature-canvas');
+    const saveSignatureBtn = document.getElementById('save-signature-btn');
+    const cancelSignatureBtn = document.getElementById('cancel-signature-btn');
+    const signatureData = document.getElementById('signature-data');
+    const signaturePreview = document.getElementById('signature-preview');
+    
+    let stream = null;
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    
+    // Kamera events
+    cameraBtn.addEventListener('click', async function() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            cameraVideo.srcObject = stream;
+            cameraVideo.play();
+            cameraModal.style.display = 'block';
+        } catch (error) {
+            alert('Kameraga ruxsat berilmadi: ' + error.message);
+        }
+    });
+    
+    captureBtn.addEventListener('click', function() {
+        const canvas = cameraCanvas;
+        const video = cameraVideo;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        
+        canvas.toBlob(function(blob) {
+            const file = new File([blob], 'camera_image.jpg', { type: 'image/jpeg' });
+            
+            // File inputga file ni qo'yish
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            imageInput.files = dataTransfer.files;
+            
+            closeCamera();
+        }, 'image/jpeg', 0.8);
+    });
+    
+    closeCameraBtn.addEventListener('click', closeCamera);
+    
+    function closeCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        cameraModal.style.display = 'none';
+    }
+    
+    // Imzo chizish
+    signatureBtn.addEventListener('click', function() {
+        signatureContainer.style.display = 'block';
+        clearSignatureBtn.style.display = 'inline-block';
+        setupCanvas();
+    });
+    
+    clearSignatureBtn.addEventListener('click', function() {
+        clearCanvas();
+    });
+    
+    
+    cancelSignatureBtn.addEventListener('click', function() {
+        signatureContainer.style.display = 'none';
+        clearCanvas();
+    });
+    
+    function setupCanvas() {
+        const ctx = signatureCanvas.getContext('2d');
+        ctx.strokeStyle = '#1a1a1a';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        // Canvas o'lchamlarini to'g'ri sozlash
+        const rect = signatureCanvas.getBoundingClientRect();
+        signatureCanvas.width = 400;  // Actual canvas resolution
+        signatureCanvas.height = 200;
+        
+        // CSS styling
+        signatureCanvas.style.width = '100%';
+        signatureCanvas.style.maxWidth = '400px';
+        signatureCanvas.style.height = '200px';
+        
+        // Mouse events
+        signatureCanvas.addEventListener('mousedown', startDrawing);
+        signatureCanvas.addEventListener('mousemove', draw);
+        signatureCanvas.addEventListener('mouseup', stopDrawing);
+        signatureCanvas.addEventListener('mouseout', stopDrawing);
+        
+        // Touch events
+        signatureCanvas.addEventListener('touchstart', handleTouch);
+        signatureCanvas.addEventListener('touchmove', handleTouch);
+        signatureCanvas.addEventListener('touchend', stopDrawing);
+    }
+    
+    function startDrawing(e) {
+        isDrawing = true;
+        const coords = getMousePos(e);
+        lastX = coords.x;
+        lastY = coords.y;
+    }
+    
+    function draw(e) {
+        if (!isDrawing) return;
+        
+        const ctx = signatureCanvas.getContext('2d');
+        const coords = getMousePos(e);
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(coords.x, coords.y);
+        ctx.stroke();
+        
+        lastX = coords.x;
+        lastY = coords.y;
+    }
+    
+    function getMousePos(e) {
+        const rect = signatureCanvas.getBoundingClientRect();
+        const scaleX = signatureCanvas.width / rect.width;
+        const scaleY = signatureCanvas.height / rect.height;
+        
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
+        };
+    }
+    
+    function getTouchPos(e) {
+        const rect = signatureCanvas.getBoundingClientRect();
+        const scaleX = signatureCanvas.width / rect.width;
+        const scaleY = signatureCanvas.height / rect.height;
+        const touch = e.touches[0];
+        
+        return {
+            x: (touch.clientX - rect.left) * scaleX,
+            y: (touch.clientY - rect.top) * scaleY
+        };
+    }
+    
+    function stopDrawing() {
+        isDrawing = false;
+    }
+    
+    function handleTouch(e) {
+        e.preventDefault();
+        
+        if (e.type === 'touchstart') {
+            isDrawing = true;
+            const coords = getTouchPos(e);
+            lastX = coords.x;
+            lastY = coords.y;
+        } else if (e.type === 'touchmove') {
+            if (!isDrawing) return;
+            
+            const ctx = signatureCanvas.getContext('2d');
+            const coords = getTouchPos(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(coords.x, coords.y);
+            ctx.stroke();
+            
+            lastX = coords.x;
+            lastY = coords.y;
+        }
+    }
+    
+    function clearCanvas() {
+        const ctx = signatureCanvas.getContext('2d');
+        ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        signatureData.value = '';
+        signaturePreview.style.display = 'none';
+    }
+    
+    saveSignatureBtn.addEventListener('click', function() {
+        const dataURL = signatureCanvas.toDataURL('image/png');
+        signatureData.value = dataURL;
+        signatureContainer.style.display = 'none';
+        
+        // Imzoni preview da ko'rsatish
+        const signatureImage = document.getElementById('signature-image');
+        signatureImage.src = dataURL;
+        signaturePreview.style.display = 'block';
+    });
+});
+</script>
+{% endblock %}

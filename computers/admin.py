@@ -1,0 +1,24 @@
+from django.contrib import admin
+from .models import Computer
+
+@admin.register(Computer)
+class ComputerAdmin(admin.ModelAdmin):
+    list_display = ['name', 'surname', 'created_by', 'created_at']
+    list_filter = ['created_at', 'created_by']
+    search_fields = ['name', 'surname']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Asosiy ma\'lumotlar', {
+            'fields': ('name', 'surname', 'image', 'signature')
+        }),
+        ('Tizim ma\'lumotlari', {
+            'fields': ('created_by', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        if not change:  # Yangi obyekt yaratilayotgan bo'lsa
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)

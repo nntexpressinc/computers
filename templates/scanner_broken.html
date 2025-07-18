@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+
+{% block title %}QR Scanner - Ofis Tizimi{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>QR Kod Scanner</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        ← Orqaga
+    </a>
+</div>
+
+<div class="grid grid-2 gap-3">
+    <div class="card">
+        <h3 style="margin-bottom: 20px;">Kamera Scanner</h3>
+        <div id="scanner-container" style="position: relative; width: 100%; height: 300px; background: #f8f9fa; border-radius: 8px; overflow: hidden;">
+            <video id="scanner-video" style="width: 100%; height: 100%; object-fit: cover;"></video>
+            <canvas id="scanner-canvas" style="display: none;"></canvas>
+        </div>
+        
+                <div class="mt-3">
+            <button id="start-camera" class="btn btn-primary">
+                📹 Kamerani yoqish
+            </button>
+            <button id="stop-camera" class="btn btn-secondary" style="display: none;">
+                ⏹️ Kamerani o'chirish
+            </button>
+            <br><br>
+            <button id="test-qr" class="btn btn-success" style="width: 100%;">
+                🔍 Test QR (ID: 1)
+            </button>
+        </div>
+        
+        <div id="scan-status" style="margin-top: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
+    </div>
+    
+    <div class="card">
+        <h3 style="margin-bottom: 20px;">QR Fayl Scanner</h3>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <input type="file" id="qr-file-input" accept="image/*" class="form-control" style="margin-bottom: 15px;">
+                        <button id="scan-file-btn" class="btn btn-primary" style="width: 100%;">
+                📁 Fayldan QR kod o'qish
+            </button>
+        </div>
+        
+        <div id="file-preview" style="text-align: center; margin-bottom: 20px; display: none;">
+            <img id="preview-image" style="max-width: 100%; height: 200px; object-fit: contain; border-radius: 8px;">
+        </div>
+        
+        <div id="scan-result" style="min-height: 200px;">
+            <div style="text-align: center; color: #666; margin-top: 50px;">
+                <p>QR kodni skanerlash uchun kamerani yoqing yoki fayl tanlang</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let video = null;
+let canvas = null;
+let context = null;
+let scanning = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // jsQR kutubxonasini kutish
+    function waitForJsQR() {
+        if (typeof window.jsQR !== 'undefined') {
+            console.log('jsQR kutubxonasi yuklandi');
+            initializeScanner();
+        } else {
+            console.log('jsQR kutubxonasi kutilmoqda...');
+            setTimeout(waitForJsQR, 100);
+        }
+    }
+    
+    waitForJsQR();
+});
+
+function initializeScanner() {
+    video = document.getElementById('scanner-video');
+    canvas = document.getElementById('scanner-canvas');
+    context = canvas.getContext('2d');
+    
+    const startBtn = document.getElementById('start-camera');
+    const stopBtn = document.getElementById('stop-camera');
+    const testBtn = document.getElementById('test-qr');
+    const statusDiv = document.getElementById('scan-status');
+    const resultDiv = document.getElementById('scan-result');
+    const fileInput = document.getElementById('qr-file-input');
+    const scanFileBtn = document.getElementById('scan-file-btn');
+    const filePreview = document.getElementById('file-preview');
+    const previewImage = document.getElementById('preview-image');
+    
+    startBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
+    testBtn.addEventListener('click', testQRCode);
+    scanFileBtn.addEventListener('click', scanFromFile);
+    fileInput.addEventListener('change', previewFile);
+    
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            video.srcObject = stream;
+            video.play();
+            
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            
+            showStatus('Kamera yoqildi. QR kodni ko\'rsating...', 'success');
+            scanning = true;
+            scanQRCode();
+        } catch (error) {
+            showStatus('Kameraga ruxsat berilmadi: ' + error.message, 'error');
+        }
+    }
+    
+    function stopCamera() {
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+        
+        startBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+        scanning = false;
+        
+        showStatus('Kamera o\'chirildi', 'info');
+    }
+    
+    function testQRCode() {
+        // Test uchun QR kod ma'lumotlari
+        const testQRData = "Computer ID: 1\nName: Test User\nCreated: 2025-01-18 10:30";
+        console.log('Test QR kod ishga tushirildi:', testQRData);
+        processQRCode(testQRData);
+    }
+    
+    function previewFile() {
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                filePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    function scanFromFile() {
+        const file = fileInput.files[0];
+        if (!file) {
+            showStatus('Iltimos, avval fayl tanlang', 'error');
+            return;
+        }
+        
+        if (!window.jsQR) {
+            console.error('jsQR kutubxonasi yuklanmagan!');
+            showStatus('QR kod kutubxonasi yuklanmagan. Sahifani yangilang.', 'error');
+            return;
+        }
+        
+        showStatus('Fayldan QR kod o\'qilmoqda...', 'info');
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const tempCanvas = document.createElement('canvas');
+                const tempContext = tempCanvas.getContext('2d');
+                
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                tempContext.drawImage(img, 0, 0);
+                
+                const imageData = tempContext.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (code) {
+                    console.log('Fayldan QR kod topildi:', code.data);
+                    processQRCode(code.data);
+                } else {
+                    showStatus('QR kod topilmadi. Boshqa fayl tanlang', 'error');
+                }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function scanQRCode() {
+        if (!window.jsQR) {
+            console.error('jsQR kutubxonasi yuklanmagan!');
+            showStatus('QR kod kutubxonasi yuklanmagan. Sahifani yangilang.', 'error');
+            return;
+        }
+        
+        if (!scanning || !video.videoWidth || !video.videoHeight) {
+            if (scanning) {
+                setTimeout(scanQRCode, 100);
+            }
+            return;
+        }
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        
+        if (code) {
+            console.log('QR kod topildi:', code.data);
+            processQRCode(code.data);
+        } else {
+            if (scanning) {
+                setTimeout(scanQRCode, 100);
+            }
+        }
+    }
+    
+    async function processQRCode(qrData) {
+        scanning = false;
+        stopCamera(); // Kamerani o'chirish
+        
+        showStatus('QR kod topildi! Ma\'lumotlar tekshirilmoqda...', 'success');
+        console.log('QR ma\'lumotlari:', qrData);
+        
+        try {
+            // CSRF tokenni olish
+            let csrfToken = null;
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfMeta = document.querySelector('meta[name=csrf-token]');
+            const csrfCookie = document.cookie.match(/csrftoken=([^;]+)/);
+            
+            if (csrfInput) {
+                csrfToken = csrfInput.value;
+                console.log('CSRF token from input:', csrfToken);
+            } else if (csrfMeta) {
+                csrfToken = csrfMeta.getAttribute('content');
+                console.log('CSRF token from meta:', csrfToken);
+            } else if (csrfCookie) {
+                csrfToken = csrfCookie[1];
+                console.log('CSRF token from cookie:', csrfToken);
+            } else {
+                console.error('CSRF token topilmadi!');
+                showStatus('CSRF token xatosi', 'error');
+                return;
+            }
+            
+            console.log('Request yuborilmoqda...');
+            console.log('URL:', '/scan-qr/');
+            console.log('Data:', { qr_data: qrData });
+            
+            const response = await fetch('/scan-qr/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ qr_data: qrData })
+            });
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Response error text:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Response data:', data);
+            
+            if (data.success) {
+                showComputerInfo(data.computer);
+                showStatus('Kompyuter ma\'lumotlari topildi!', 'success');
+            } else {
+                showStatus('Xato: ' + data.error, 'error');
+                setTimeout(() => {
+                    resetScanner();
+                }, 3000);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            showStatus('Server xatosi: ' + error.message, 'error');
+            setTimeout(() => {
+                resetScanner();
+            }, 3000);
+        }
+    }
+    
+    function showComputerInfo(computer) {
+        const html = `
+            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px; margin-bottom: 20px;">
+                <h4 style="color: #667eea; margin-bottom: 15px;">
+                    ✅ Kompyuter topildi!
+                </h4>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px; text-align: left;">
+                    <h3 style="color: #333; margin-bottom: 15px; text-align: center;">
+                        ${computer.name} ${computer.surname}
+                    </h3>
+                    
+                    ${computer.image_url ? `
+                        <img src="${computer.image_url}" alt="Kompyuter rasmi" 
+                             style="width: 100%; max-width: 200px; height: 150px; object-fit: cover; border-radius: 8px; margin: 15px auto; display: block;">
+                    ` : ''}
+                    
+                    <div style="display: grid; gap: 10px;">
+                        <div><strong>ID:</strong> ${computer.id}</div>
+                        <div><strong>Yaratilgan:</strong> ${computer.created_at}</div>
+                        ${computer.signature ? `<div><strong>Imzo:</strong> ${computer.signature}</div>` : ''}
+                    </div>
+                </div>
+                
+                                <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: center;">
+                    <button onclick="goToComputerDetail(${computer.id})" class="btn btn-primary">
+                        👁️ Batafsil ko'rish
+                    </button>
+                    <button onclick="resetScanner()" class="btn btn-secondary">
+                        🔄 Qayta skanerlash
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        resultDiv.innerHTML = html;
+    }
+    
+    function showStatus(message, type) {
+        statusDiv.innerHTML = message;
+        statusDiv.className = `alert alert-${type === 'error' ? 'error' : 'success'}`;
+        statusDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+    }
+    
+    window.goToComputerDetail = function(computerId) {
+        window.location.href = `/computer/${computerId}/`;
+    };
+    
+    window.resetScanner = function() {
+        resultDiv.innerHTML = `
+            <div style="text-align: center; color: #666; margin-top: 50px;">
+                <p>QR kodni skanerlash uchun kamerani yoqing yoki fayl tanlang</p>
+            </div>
+        `;
+        
+        filePreview.style.display = 'none';
+        fileInput.value = '';
+        
+        if (video.srcObject) {
+            scanning = true;
+            scanQRCode();
+        }
+        }
+    };
+}
+</script>
+
+<!-- QR kod o'qish uchun jsQR kutubxonasi -->
+<script>
+// jsQR kutubxonasini yuklanishini tekshirish
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('jsQR mavjudligi:', typeof window.jsQR);
+    if (typeof window.jsQR === 'undefined') {
+        console.error('jsQR kutubxonasi yuklanmagan!');
+    }
+});
+</script>
+
+<!-- Boshqa CDN dan jsQR kutubxonasi -->
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+
+<!-- CSRF token uchun yashirin input -->
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+{% endblock %}
