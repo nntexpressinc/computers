@@ -66,6 +66,32 @@
             </div>
         </div>
         
+        <div class="grid grid-2 gap-3" style="margin-bottom: 20px;">
+            <div class="form-group">
+                <label class="form-label">{{ form.keyboards_count.label }}</label>
+                {{ form.keyboards_count }}
+                {% if form.keyboards_count.errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.keyboards_count.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">{{ form.mice_count.label }}</label>
+                {{ form.mice_count }}
+                {% if form.mice_count.errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.mice_count.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
         <div class="form-group" style="margin-bottom: 20px;">
             <label class="form-label">{{ form.image.label }}</label>
             <div class="image-upload-container">

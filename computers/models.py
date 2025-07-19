@@ -9,6 +9,8 @@ class Computer(models.Model):
     surname = models.CharField(max_length=100, verbose_name="Familya")
     monitors_count = models.PositiveIntegerField(default=1, verbose_name="Monitorlar soni")
     computers_count = models.PositiveIntegerField(default=1, verbose_name="Kompyuterlar soni")
+    keyboards_count = models.PositiveIntegerField(default=1, verbose_name="Klaviaturalar soni")
+    mice_count = models.PositiveIntegerField(default=1, verbose_name="Sichqonchalar soni")
     image = models.ImageField(upload_to='computer_images/', verbose_name="Rasm", null=True, blank=True)
     signature = models.TextField(verbose_name="Imzo", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan vaqt")
@@ -20,7 +22,7 @@ class Computer(models.Model):
     
     def generate_qr_code(self):
         """QR kod generatsiya qilish"""
-        qr_data = f"Computer ID: {self.id}\nName: {self.name} {self.surname}\nMonitors: {self.monitors_count}\nComputers: {self.computers_count}\nCreated: {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+        qr_data = f"Computer ID: {self.id}\nName: {self.name} {self.surname}\nMonitors: {self.monitors_count}\nComputers: {self.computers_count}\nKeyboards: {self.keyboards_count}\nMice: {self.mice_count}\nCreated: {self.created_at.strftime('%Y-%m-%d %H:%M')}"
         
         qr = qrcode.QRCode(
             version=1,

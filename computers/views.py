@@ -75,6 +75,8 @@ def scan_qr_code(request):
                             'surname': computer.surname,
                             'monitors_count': computer.monitors_count,
                             'computers_count': computer.computers_count,
+                            'keyboards_count': computer.keyboards_count,
+                            'mice_count': computer.mice_count,
                             'created_at': computer.created_at.strftime('%Y-%m-%d %H:%M'),
                             'image_url': computer.image.url if computer.image else None,
                             'signature': computer.signature
@@ -121,7 +123,8 @@ def profile_view(request):
     all_computers = Computer.objects.all()
     total_computers_count = all_computers.aggregate(Sum('computers_count'))['computers_count__sum'] or 0
     total_monitors_count = all_computers.aggregate(Sum('monitors_count'))['monitors_count__sum'] or 0
-    total_entries = all_computers.count()
+    total_keyboards_count = all_computers.aggregate(Sum('keyboards_count'))['keyboards_count__sum'] or 0
+    total_mice_count = all_computers.aggregate(Sum('mice_count'))['mice_count__sum'] or 0
     
     # Javobgar shaxslar soni (noyob ismlar)
     unique_persons = Computer.objects.values('name', 'surname').distinct().count()
@@ -130,5 +133,7 @@ def profile_view(request):
         'user': request.user,
         'total_computers_count': total_computers_count,
         'total_monitors_count': total_monitors_count,
+        'total_keyboards_count': total_keyboards_count,
+        'total_mice_count': total_mice_count,
         'unique_persons': unique_persons,
     })

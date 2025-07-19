@@ -14,10 +14,10 @@
     <div class="grid grid-3 computers-grid">
         {% for computer in computers %}
         <div class="card">
-            <div class="d-flex gap-3 align-items-start mb-3">
+            <div class="d-flex gap-3 align-items-center mb-3">
                 {% if computer.image %}
                     <img src="{{ computer.image.url }}" alt="Kompyuter rasmi" 
-                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; margin-right: 12px;">
                 {% endif %}
                 <div style="flex: 1; min-width: 0;">
                     <h3 style="margin: 0 0 5px 0;">{{ computer.name }} {{ computer.surname }}</h3>

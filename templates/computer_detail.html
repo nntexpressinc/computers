@@ -43,6 +43,16 @@ _{% extends 'base.html' %}
         </div>
         
         <div class="form-group">
+            <label class="form-label">Klaviaturalar soni:</label>
+            <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">{{ computer.keyboards_count }} ta</p>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Sichqonchalar soni:</label>
+            <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">{{ computer.mice_count }} ta</p>
+        </div>
+        
+        <div class="form-group">
             <label class="form-label">Yaratilgan vaqt:</label>
             <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0;">{{ computer.created_at|date:"d.m.Y H:i" }}</p>
         </div>
@@ -133,10 +143,51 @@ function printQR() {
 
 function downloadQR() {
     const qrImage = document.querySelector('img[alt="QR Kod"]');
-    const link = document.createElement('a');
-    link.download = 'qr_code_{{ computer.id }}.png';
-    link.href = qrImage.src;
-    link.click();
+    const personName = '{{ computer.name }} {{ computer.surname }}';
+    
+    // Canvas yaratish
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Canvas o'lchamlari
+    canvas.width = 300;
+    canvas.height = 350;
+    
+    // Oq fon
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Matn uslubi
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    
+    // Ism familyani tepaga yozish
+    ctx.fillText(personName, canvas.width / 2, 30);
+    
+    // QR kod rasmini yuklash va chizish
+    const img = new Image();
+    img.onload = function() {
+        // QR kodni markazga chizish
+        const qrSize = 200;
+        const qrX = (canvas.width - qrSize) / 2;
+        const qrY = 50;
+        
+        ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+        
+        // Qo'shimcha ma'lumotlar
+        ctx.font = '12px Arial';
+        ctx.fillText('ID: {{ computer.id }}', canvas.width / 2, 280);
+        ctx.fillText('{{ computer.created_at|date:"d.m.Y H:i" }}', canvas.width / 2, 300);
+        
+        // Yuklab olish
+        const link = document.createElement('a');
+        link.download = '{{ computer.name }}_{{ computer.surname }}_QR.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    };
+    
+    img.src = qrImage.src;
 }
 </script>
 
