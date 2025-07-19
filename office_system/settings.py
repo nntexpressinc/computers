@@ -126,3 +126,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://computers.nntexpressinc.com",
+    "https://nntexpressinc.com",
+    "http://localhost:8000",
+    "http://165.227.136.127",
+    "http://0.0.0.0",
+    "http://localhost:8000",
+]
