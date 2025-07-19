@@ -130,6 +130,7 @@ LOGOUT_REDIRECT_URL = 'login'
 
 CSRF_TRUSTED_ORIGINS = [
     "https://computers.nntexpressinc.com",
+    "http://computers.nntexpressinc.com",
     "https://nntexpressinc.com",
     "http://localhost:8000",
     "http://165.227.136.127",
