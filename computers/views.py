@@ -73,6 +73,8 @@ def scan_qr_code(request):
                             'id': computer.id,
                             'name': computer.name,
                             'surname': computer.surname,
+                            'monitors_count': computer.monitors_count,
+                            'computers_count': computer.computers_count,
                             'created_at': computer.created_at.strftime('%Y-%m-%d %H:%M'),
                             'image_url': computer.image.url if computer.image else None,
                             'signature': computer.signature
@@ -113,4 +115,20 @@ def scan_qr_code(request):
 
 @login_required
 def profile_view(request):
-    return render(request, 'profile.html', {'user': request.user})
+    from django.db.models import Sum
+    
+    # Umumiy kompyuterlar va monitorlar statistikasi
+    all_computers = Computer.objects.all()
+    total_computers_count = all_computers.aggregate(Sum('computers_count'))['computers_count__sum'] or 0
+    total_monitors_count = all_computers.aggregate(Sum('monitors_count'))['monitors_count__sum'] or 0
+    total_entries = all_computers.count()
+    
+    # Javobgar shaxslar soni (noyob ismlar)
+    unique_persons = Computer.objects.values('name', 'surname').distinct().count()
+    
+    return render(request, 'profile.html', {
+        'user': request.user,
+        'total_computers_count': total_computers_count,
+        'total_monitors_count': total_monitors_count,
+        'unique_persons': unique_persons,
+    })

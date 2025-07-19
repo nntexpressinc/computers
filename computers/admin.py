@@ -3,14 +3,14 @@ from .models import Computer
 
 @admin.register(Computer)
 class ComputerAdmin(admin.ModelAdmin):
-    list_display = ['name', 'surname', 'created_by', 'created_at']
-    list_filter = ['created_at', 'created_by']
+    list_display = ['name', 'surname', 'monitors_count', 'computers_count', 'created_by', 'created_at']
+    list_filter = ['created_at', 'created_by', 'monitors_count', 'computers_count']
     search_fields = ['name', 'surname']
     readonly_fields = ['created_at', 'updated_at']
     
     fieldsets = (
         ('Asosiy ma\'lumotlar', {
-            'fields': ('name', 'surname', 'image', 'signature')
+            'fields': ('name', 'surname', 'monitors_count', 'computers_count', 'image', 'signature')
         }),
         ('Tizim ma\'lumotlari', {
             'fields': ('created_by', 'created_at', 'updated_at'),

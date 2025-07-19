@@ -350,6 +350,8 @@ function initializeScanner() {
                     <div style="display: grid; gap: 10px;">
                         <div><strong>Ism:</strong> ${computer.name}</div>
                         <div><strong>Familiya:</strong> ${computer.surname}</div>
+                        <div><strong>Monitorlar:</strong> ${computer.monitors_count} ta</div>
+                        <div><strong>Kompyuterlar:</strong> ${computer.computers_count} ta</div>
                         <div><strong>ID:</strong> ${computer.id}</div>
                         <div><strong>Yaratilgan:</strong> ${new Date(computer.created_at).toLocaleDateString('uz-UZ')}</div>
                         ${computer.signature && computer.signature.startsWith('data:image') ? `

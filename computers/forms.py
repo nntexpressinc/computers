@@ -19,7 +19,7 @@ class LoginForm(AuthenticationForm):
 class ComputerForm(forms.ModelForm):
     class Meta:
         model = Computer
-        fields = ['name', 'surname', 'image', 'signature']
+        fields = ['name', 'surname', 'monitors_count', 'computers_count', 'image', 'signature']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -28,6 +28,18 @@ class ComputerForm(forms.ModelForm):
             'surname': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Familyani kiriting'
+            }),
+            'monitors_count': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Monitorlar sonini kiriting',
+                'min': '1',
+                'value': '1'
+            }),
+            'computers_count': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Kompyuterlar sonini kiriting',
+                'min': '1',
+                'value': '1'
             }),
             'image': forms.FileInput(attrs={
                 'class': 'form-control',
@@ -38,6 +50,8 @@ class ComputerForm(forms.ModelForm):
         labels = {
             'name': 'Ism',
             'surname': 'Familya',
+            'monitors_count': 'Monitorlar soni',
+            'computers_count': 'Kompyuterlar soni',
             'image': 'Rasm',
             'signature': 'Imzo'
         }

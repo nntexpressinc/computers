@@ -40,6 +40,32 @@
             </div>
         </div>
         
+        <div class="grid grid-2 gap-3" style="margin-bottom: 20px;">
+            <div class="form-group">
+                <label class="form-label">{{ form.monitors_count.label }}</label>
+                {{ form.monitors_count }}
+                {% if form.monitors_count.errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.monitors_count.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">{{ form.computers_count.label }}</label>
+                {{ form.computers_count }}
+                {% if form.computers_count.errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.computers_count.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
         <div class="form-group" style="margin-bottom: 20px;">
             <label class="form-label">{{ form.image.label }}</label>
             <div class="image-upload-container">

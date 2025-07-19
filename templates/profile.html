@@ -50,12 +50,26 @@
         </div>
         
         <div>
-            <h3 style="margin-bottom: 20px;">Statistika</h3>
+            <h3 style="margin-bottom: 20px;">Tizim statistikasi</h3>
             
             <div class="form-group">
-                <label class="form-label">Yaratilgan kompyuterlar:</label>
-                <p style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 0; font-size: 24px; font-weight: bold; color: #667eea;">
-                    {{ user.computer_set.count }}
+                <label class="form-label">Umumiy kompyuterlar:</label>
+                <p style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin: 0; font-size: 20px; font-weight: bold; color: #28a745;">
+                    {{ total_computers_count }} ta
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Umumiy monitorlar:</label>
+                <p style="background: #e8f2ff; padding: 10px; border-radius: 5px; margin: 0; font-size: 20px; font-weight: bold; color: #007bff;">
+                    {{ total_monitors_count }} ta
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Javobgar shaxslar:</label>
+                <p style="background: #f3e5f5; padding: 10px; border-radius: 5px; margin: 0; font-size: 18px; font-weight: bold; color: #6f42c1;">
+                    {{ unique_persons }} kishi
                 </p>
             </div>
             
